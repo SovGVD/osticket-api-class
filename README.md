@@ -1,0 +1,1 @@
+# PHP osTicket API class

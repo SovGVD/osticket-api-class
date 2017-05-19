@@ -5,15 +5,17 @@
 */
 
 class tickets {
-    private $errors=array();
-    private $api=true;
+	private $errors=array();
+	private $api=true;
 	private $ost=false;
 	private $db_config=false;
 	
 	function tickets($_api=true,$_db_config=false) {
 		$this->api=$_api;
 		$this->db_config=$_db_config;
-		$this->_init_db();
+		if ($this->db_config['use_db']) {
+			$this->_init_db();
+		}
 	}
 	
 	private function _init_db() {
@@ -30,17 +32,17 @@ class tickets {
 
 	function create ($post_data,$user_data=false,$return_url=false) {
 		$out=array("ok"=>"ok","d"=>false);
-		if ($user_data && $user_data->email && trim($post_data['subject'])!='' && trim($post_data['txt'])!='') {
+		if ($user_data && isset($user_data->email) && trim($post_data['subject'])!='' && trim($post_data['txt'])!='') {
 			$tmp=explode("@",$user_data->email);
-			if ($user_data->name=='') $user_data->name=$tmp[0];
-			if ($user_data->surname=='') $user_data->surname=$tmp[1];
+			if (!isset($user_data->name) || $user_data->name=='') $user_data->name=$tmp[0];
+			if (!isset($user_data->surname) || $user_data->surname=='') $user_data->surname=$tmp[1];
 			$data = array(
 			'name'      =>      $user_data->name." ".$user_data->surname,
 			'email'     =>     $user_data->email,
 			'deptId'	=>	(int)$post_data['department_id'],
 			'subject'   =>      htmlspecialchars(trim($post_data['subject'])),
 			'message'   =>      htmlspecialchars(trim($post_data['txt'])),
-			'ip'        =>      @$_SERVER['REMOTE_ADDR'],
+			'ip'        =>      isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'127.0.0.1',
 			'attachments' => array(),
 			);
 			if ($ticket_id=$this->_api($this->db_config['api_url']['create'],$data)) {
@@ -80,14 +82,14 @@ class tickets {
 		$out=array("ok"=>"ok","d"=>false);
 		if ($user_data && $user_data->email && trim($post_data['txt'])!='') {
 			$tmp=explode("@",$user_data->email);
-			if ($user_data->name=='') $user_data->name=$tmp[0];
-			if ($user_data->surname=='') $user_data->surname=$tmp[1];
+			if (!isset($user_data->name) || $user_data->name=='') $user_data->name=$tmp[0];
+			if (!isset($user_data->surname) || $user_data->surname=='') $user_data->surname=$tmp[1];
 			$data = array(
-			'poster'      =>      $user_data->name." ".$user_data->surname,
-			'email'     =>      $user_data->email,
-			'ticketID'   =>      (int)$post_data['ticket_id'],
-			'message'   =>      htmlspecialchars(trim($post_data['txt'])),
-			'ip'        =>      @$_SERVER['REMOTE_ADDR'],
+			'poster'	=>      $user_data->name." ".$user_data->surname,
+			'email'		=>      $user_data->email,
+			'ticketID'	=>      (int)$post_data['ticket_id'],
+			'message'	=>      htmlspecialchars(trim($post_data['txt'])),
+			'ip'		=>      isset($_SERVER['REMOTE_ADDR'])?$_SERVER['REMOTE_ADDR']:'127.0.0.1',
 			'attachments' => array(),
 			);
 
